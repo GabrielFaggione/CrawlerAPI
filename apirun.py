@@ -3,7 +3,6 @@ from flask_restplus import Resource, Api
 from urllib.request import Request, urlopen
 
 app = Flask(__name__) # instancia um objeto FLask
-
 api = Api(app, version='1.0', title='Crawler API', # instancia a API
     description='A simple crawler')
 
@@ -30,8 +29,7 @@ class UrlCommand(Resource):
 
     @api.doc(responses={
         200: 'Success',
-        400: 'Validation Error'
-    })
+        400: 'Validation Error'})
     @api.doc(params={'url': 'Adicionar as urls separadas por ";", como por exemplo: \n .../api/?url=https://www.python.org/;https://pypi.org/'})
     @api.doc(params={'string':'Adicionar a string a ser procurada após o ultimo url, como por exemplo: \n ...pipy.org/&string=Python'})
     def put(self):
