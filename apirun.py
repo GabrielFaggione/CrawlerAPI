@@ -1,6 +1,7 @@
+# -*- coding: utf-8 -*-
 from flask import Flask, request
-from flask_restplus import Resource, Api
-from urllib.request import Request, urlopen
+from flask_restplus import Resource, Api, fields
+from crawler import search
 
 app = Flask(__name__) # instancia um objeto FLask
 api = Api(app, version='1.0', title='Crawler API', # instancia a API
@@ -8,30 +9,20 @@ api = Api(app, version='1.0', title='Crawler API', # instancia a API
 
 urls = {} # dict responsável por guardar a url e as pesquisas relacionadas as mesmas
 
-def search(url,string):
-    # Funcao responsavel pela varredura das urls
-    req = Request(url, headers={'User-Agent': 'Mozilla/5.0'}) #Método utilizado para poder ler sites que possuem segurança contra "varreduras"
-    web_byte = urlopen(req).read() # Lemos a url atual
-    webpage = web_byte.decode('utf-8').lower() #codificamos a url lida para utf-8 e transformamos toda a string para lowercase
-    quant = webpage.count(string.lower()) # verificamos a ocorrencia da string dentro do site
-    return quant # retornamos o valor obtido
-
 @api.route('/api/')
 class UrlCommand(Resource):
-    @api.doc(params={'url': 'Adicionar a url a ser pesquisada, como por exemplo: \n .../api/?url=https://www.python.org/'})
-    @api.doc(responses={
-        200: 'Success',
-        400: 'Validation Error'
-    })
+    @api.doc(params={'url': 'Adicionar a url a ser pesquisada'})
+    @api.doc(responses={ 200: 'Success', 400: 'Validation Error'})
     def get(self):
         url = request.args.get('url') # recebe o parametro passado
-        return {url: urls[url]} # retorna a dict correspondente ao valor do parametro passado
+        if url in urls:
+            return {url: urls[url]} # retorna a dict correspondente ao valor do parametro passado
+        return "Url não pesquisado"
 
-    @api.doc(responses={
-        200: 'Success',
-        400: 'Validation Error'})
-    @api.doc(params={'url': 'Adicionar as urls separadas por ";", como por exemplo: \n .../api/?url=https://www.python.org/;https://pypi.org/'})
-    @api.doc(params={'string':'Adicionar a string a ser procurada após o ultimo url, como por exemplo: \n ...pipy.org/&string=Python'})
+
+    @api.doc(responses= {200: 'Success', 400: 'Validation Error'} )
+    @api.doc(params={'url': 'Adicionar as urls separadas por ";", como por exemplo: \nhttps://www.python.org/;https://pypi.org/'})
+    @api.doc(params={'string':'Adicionar a string a ser procurada'})
     def put(self):
         url_string = request.args.get('url') # recebe os urls a serem verificados
         string = request.args.get('string') # recebe a string a ser verificada
